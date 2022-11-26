@@ -15,9 +15,10 @@ class Device:
         if device is None:
             sys.exit('[ERROR] Device in DFU mode not found. Exiting.')
 
-        device_data = dict()
-        for item in device.serial_number.split():
-            device_data[item.split(':')[0]] = item.split(':')[1]
+        device_data = {
+            item.split(':')[0]: item.split(':')[1]
+            for item in device.serial_number.split()
+        }
 
         for i in ('CPID', 'CPRV', 'BDID', 'CPFM', 'SCEP', 'IBFL'):
             device_data[i] = int(device_data[i], 16)
