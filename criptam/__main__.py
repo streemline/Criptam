@@ -48,7 +48,7 @@ def main():
 
     print(f"\nGetting firmware information for device: {device.data['identifier']}...")
 
-    firmwares = list()
+    firmwares = []
     for API_URL in (RELEASE_API, BETA_API):
         api = requests.get(f"{API_URL}/{device.data['identifier']}").json()
 
@@ -58,10 +58,8 @@ def main():
             firms = api
 
         for firm in firms:
-            if any(firm['buildid'] == f['buildid'] for f in firmwares):
-                continue
-
-            firmwares.append(firm)
+            if all(firm['buildid'] != f['buildid'] for f in firmwares):
+                firmwares.append(firm)
 
     firmwares = sorted(firmwares, key=lambda x: x['buildid'], reverse=True)
     if args.buildid:
@@ -71,7 +69,7 @@ def main():
             for firm in firmwares
             if firm['buildid'].casefold() == buildid.casefold()
         ]
-        if len(firmwares) == 0:
+        if not firmwares:
             sys.exit(
                 f"iOS Build {buildid} does not exist for device: {device.data['identifier']}. Exiting."
             )
@@ -80,13 +78,10 @@ def main():
         firmwares = [
             firm for firm in firmwares if firm['version'].startswith(args.major)
         ]
-        if len(firmwares) == 0:
+        if not firmwares:
             sys.exit(
                 f"iOS {args.major} does not exist for device: {device.data['identifier']}. Exiting."
             )
-
-    elif args.all:
-        pass
 
     if len(firmwares) > 10:
         try:
